@@ -140,6 +140,62 @@
         right: 45px;
         bottom: 25px;
       }
+      #app{
+        margin-top: 15px;
+        height: 85vh;
+        overflow-x:hidden;
+        overflow-y: auto;
+      }
+      .el-form-item{
+        width: 100%;
+      }
+      .el-form-item__content{
+        width: 65%;
+      }
+      .el-select{
+        width: 100%;
+      }
+      .red_star{
+        color: red;
+        /* position: absolute; */
+        /* left: 4px; */
+      }
+      .hint {
+        font-size: 12px;
+        color: red;
+        margin-left: 7rem;
+      }
+      .el-form-item{
+        margin-bottom: 10px;
+        margin-right: 0;
+      }
+      label{
+        margin-bottom: 0px;
+      }
+      .form_only{
+        height: 67px;
+      }
+      [v-cloak]{
+        display: none;
+      }
+      .navbar-header{
+        width: 20rem;
+        padding: 5px 0;
+        display: flex;
+    align-items: center
+      }
+      .title_text{
+        display: none;
+      }
+      .navbar-brand{
+        padding: 10px 15px;
+        height: 40px;
+      }
+      .title_icon{
+        display: none;
+        color: white;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -147,7 +203,9 @@
     <nav class="navbar-inverse">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#">样本预处理</a>
+          <a class="navbar-brand title_text" href="#"></a>
+          <span class="el-icon-edit-outline title_icon"></span>
+          <input type="text" class="el-input__inner title" placeholder='请输入标题'></input>
         </div>
       </div>
     </nav>
@@ -193,7 +251,7 @@
             </!-->
           </ul>
           <!-- Tab panes -->
-          <div id="app" class="tab-content">
+          <div id="app" v-cloak class="tab-content">
             <!-- <div role="tabpanel" class="tab-pane active" id="tab1">
               <p>采样个数</p>
               <p><span class="help-block inline ml5">与采样比例二选一</span></p>
@@ -210,13 +268,102 @@
               </p>
             </div> -->
             <!-- <div role="tabpanel" class="tab-pane" id="tab2">2</div> -->
-            <el-form :inline="true" >
-              <div v-for='(item,index) in colData' :key="index">
-                <el-form-item :label='item.label'>
-                  <el-input v-if="item.bx_col_type === 'string'" v-model='item.value'  placeholder="请输入内容"></el-input>
+            <el-form v-if="colData.length>0" :inline="true" >
+              <div class="form_only" v-for='(item,index) in colData' :key="index">
+                <el-form-item v-show='item._isShow'>
+                  <label slot="label">
+                    <span v-if="item.verify_info.required == 'required'" class="red_star">*</span>
+                    {{item.label}}
+                  </label>
+                  <!-- <el-input v-if="item.bx_col_type === 'string'" v-model='item.value'  placeholder="请输入内容"></el-input>
+                      <el-select
+                      @change="blurs"
+                      v-if="item.bx_col_type == 'Dict'"
+                      v-model="item.value"
+                      placeholder="请选择"
+                    >
+                      <el-option
+                        v-for="a in item.option_list_v2"
+                        :key="a.value"
+                        :label="a.label"
+                        :value="a.value"
+                      ></el-option>
+                    </el-select> -->
+                    <el-input
+                    @blur="blurs(item)"
+                    v-if="item.bx_col_type == 'string' && item.col_type == 'String'"
+                    v-model="item.value"
+                  ></el-input>
+                  <el-input
+                    @blur="blurs(item)"
+                    v-if="item.bx_col_type == 'String' && item.col_type == 'String'"
+                    v-model="item.value"
+                  ></el-input>
+                  <el-input
+                    @blur="blurs"
+                    v-if="item.bx_col_type == 'money' && item.col_type == 'Money'"
+                    v-model="item.value"
+                  ></el-input>
+                  <el-input
+                  @blur="blurs(item)"
+                    type="textarea" 
+                    v-if="item.bx_col_type == 'mtext' && item.col_type == 'MultilineText'"
+                    v-model="item.value"
+                  ></el-input>
+                  <el-radio-group
+                    v-if="item.bx_col_type == 'string' && item.col_type=='Enum'"
+                    v-model="item.value"
+                  >
+                    <el-radio
+                      @change='blurs(item)'
+                      v-for="(eum,i) in item.option_list_v2"
+                      :key="i"
+                      :label="eum.label"
+                    >{{eum.value}}</el-radio>
+                  </el-radio-group>
+                  <el-input
+                    @blur='blurs(item)'
+                    v-if="item.bx_col_type == 'int' && item.col_type == 'int'"
+                    v-model="item.value"
+                  ></el-input>
+                  <el-select
+                  @change='blurs(item)'
+                    v-if="item.bx_col_type == 'enum' && item.col_type == 'Enum'"
+                    v-model="item.value"
+                    placeholder="请选择"
+                  >
+                    <el-option
+                      v-for="a in item.option_list_v2"
+                      :key="a.value"
+                      :label="a.label"
+                      :value="a.value"
+                    ></el-option>
+                  </el-select>
+                  <el-date-picker
+                  @change='blurs(item)'
+                    v-if="item.bx_col_type == 'date' && item.col_type == 'Date'"
+                    v-model="item.value"
+                    type="date"
+                    placeholder="选择日期"
+                  ></el-date-picker>
+                  <el-date-picker
+                  @change='blurs(item)'
+                    v-if="item.bx_col_type == 'DateRange' && item.col_type == 'DateRange'"
+                    v-model="item.value"
+                    type="date"
+                    placeholder="选择日期"
+                  ></el-date-picker>
+                  <el-date-picker
+                  @change='blurs(item)'
+                    v-if="item.bx_col_type == 'string' && item.col_type == 'DateTime'"
+                    v-model="item.value"
+                    type="datetime"
+                    placeholder="选择日期时间"
+                  ></el-date-picker>
                 </el-form-item>
+                <span v-if='item.verify_info&&item.verify_info.isShow' class="hint">{{item.verify_info.meg}}</span>
               </div>   
-              <el-button @click='save' class="save" v-if='colData.length>0' type="primary">保存</el-button>           
+              <!-- <el-button @click='save' class="save" v-if='colData.length>0' type="primary">保存</el-button>            -->
             </el-form>
             
           </div>
@@ -244,15 +391,19 @@
         id="${nodeId}"
         name="${name}"
         class="pane-node-content"
-        style="position:absolute;display: flex;"
+        style="position:absolute;display: flex;align-items: center;"
       >
-        <div class="left"><span class="iconfont ${icon}">x</span></div>
+      <div class="task_right"></div>
+
         <div class="right">
-          <span>${text}</span> <span class="status ico-warning-o"></span>
+          <span class="bt">${text}</span> <span class="status ico-warning-o"></span>
         </div>
+        <div class="left"><span class="iconfont ${icon}">x</span></div>
+
       </div>
     </div>
     <script type="text/javascript">
+      var requiredColData = []
       let app = new Vue({
         el: "#app",
         data() {
@@ -262,6 +413,8 @@
             colOriData:[],
             colData:[],
             currentId:'',
+            isShow:false,
+            requiredCol:[]
           };
         },
         methods: {
@@ -272,22 +425,115 @@
             });
             window.location.reload(true);
           },
-          save(){
+          blurs(item) {
+            console.log("this.currentId",this.currentId,requiredColData)
+
+            // if (JSON.stringify(item.verify_info) !== "{}") {
+            //   if (item.col_value == undefined || item.col_value === "") {
+            //     this.isShow = true;
+            //   } else {
+            //     this.isShow = false;
+            //   }
+            // }
+            // console.log(item)
+            // console.log($(`#${this.currentId}`))
+
+            // $(`#${this.currentId}`).css({
+            //   border:'1px solid #289D3F' 
+            // })
+            // $(`#${this.currentId}`).children('.left').children('.iconfont').css({
+            //   backgroundColor:"#289D3F"
+            // })
+            // console.log($(`#${this.currentId}`).children('.left').children('.iconfont'))
+            if(item.columns === "deptno"){
+              console.log($(`#${this.currentId}`).children('.right').children('.bt').html())
+              if(item.value != ""){
+                $(`#${this.currentId}`).children('.right').children('.bt').html(item.value)
+                mainData.forEach(only=>{
+                  if(only.instance_no === this.currentId){
+                    only.title = item.value
+                  } 
+                })
+                console.log("修改标题：",mainData)
+              } 
+              
+            }
+            this.save(item)
+          },
+          save(cols){
             console.log("currentId",this.currentId)
             let colObj = {}
-            this.colData.forEach(cols=>{
-              colObj[cols.columns] = cols.value
+            let hasMust = false
+            // this.colData.forEach(cols=>{
+              debugger
+              if(JSON.stringify(cols.verify_info)!="{}" && cols.verify_info.required=='required' && cols.value==""){
+                // this.isShow = true
+                cols.verify_info.isShow = true
+                hasMust = true
+              }
+              if(JSON.stringify(cols.verify_info)!="{}" && cols.verify_info.required=='required' && cols.value!=""){
+                cols.verify_info.isShow = false
+                hasMust = false
+              }
+            // })
+            if(hasMust===false){
+              this.colData.forEach(colname=>{
+              colObj[colname.columns] = colname.value
             })
             mainData.forEach(curr=>{
               if(this.currentId === curr.instance_no){
                 curr.form.data = colObj
                 console.log('save:----',curr)
-
               }
             })
-
+            let hasRequire = false
+            debugger
+            for(keys in colObj){
+              if(requiredColData.indexOf(keys)>=0 && colObj[keys]==""){
+                hasRequire = true
+              }              
+              // if(colObj[keys]){
+              //   $(`#${this.currentId}`).css({
+              //     border:'1px solid #289D3F' 
+              //   })
+              //   $(`#${this.currentId}`).children('.left').children('.iconfont').css({
+              //     backgroundColor:"#289D3F"
+              //   })
+              //   break
+              // }
+            }
+            if(hasRequire){
+              mainData.forEach(currs=>{
+              if(this.currentId === currs.instance_no){
+                currs.isFin = false
+                // console.log('save:----',curr)
+              }
+            })
+              // curr.isFin = false
+              $(`#${this.currentId}`).css({
+                  border:'1px solid red' 
+                })
+                $(`#${this.currentId}`).children('.left').children('.iconfont').css({
+                  backgroundColor:"red"
+                })
+            }else{
+              mainData.forEach(currs=>{
+              if(this.currentId === currs.instance_no){
+                currs.isFin = true
+                // console.log('save:----',curr)
+              }
+            })
+              $(`#${this.currentId}`).css({
+                  border:'1px solid #289D3F' 
+                })
+                $(`#${this.currentId}`).children('.left').children('.iconfont').css({
+                  backgroundColor:"#289D3F"
+                })
+            }
+            } 
+                      
           },
-          getCol(serviceName,type,id){
+          getCol(serviceName,type,id,activeNode){
             this.currentId = id
             let self = this
             let cond = {
@@ -306,7 +552,14 @@
                 }
               ],
             }
-          axios.post("http://39.98.203.134:8081/sqfw/select/srvsys_service_columnex_v2_select?colsel_v2="+serviceName,cond).then(res=>{
+            let htp = null
+            if(top.pathConfig){
+              htp = top.pathConfig.gateway
+            }else{
+              htp="http://39.98.203.134:8081"
+            }
+
+            axios.post(`${htp}/sqfw/select/srvsys_service_columnex_v2_select?colsel_v2=`+serviceName,cond).then(res=>{
             let colOriData = res.data.data.srv_cols
             this.colOriData = colOriData.filter(item => {
             // return item["in_add"] === 1;
@@ -314,10 +567,59 @@
           });
             self.colOriData.forEach(ori=>{
               ori['value'] = ""
-            })
+              ori["verify_info"] = {};
+              ori['_isShow'] = true
+              ori['_xif'] = ""
+              if(ori.x_if){
+                ori['_xif'] = ori.x_if
+              }
+            let verify = {
+              required: "1",
+              meg: "1"
+            };
+            if (
+              ori.validators &&
+              ori.validators.indexOf("required") >= 0
+            ) {
+              requiredColData.push(ori.columns)
+              let mesge = null
+              if(ori.validators_message){
+                 mesge = ori.validators_message.split("=");
+                  mesge = mesge[1];
+              }
+              
+              if(mesge === null){
+                verify = {
+                required: "required",
+                meg: "此项为必填项",
+                isShow:false
+              };
+              }else{
+                verify = {
+                required: "required",
+                meg: mesge,
+                isShow:false
+              };
+              }
+              
+              ori.verify_info = verify;
+            }
+            // ori.verify_info = verify;
+            })            
+            console.log('必填字段-----',requiredColData)
             self.colData = self.deepCopy(self.colOriData)
             console.log('this.colData',self.colData,'this.colOriData',self.colOriData)
+            if(JSON.stringify(activeNode) != "{}"){
+              for (let h = 0; h < self.colData.length; h++) {
+                for(o in activeNode){
+                  if(self.colData[h].columns == o){
+                    self.colData[h].value = activeNode[o]
+                  }
+                }
+              }
+            }  
           })
+                                         
           },
           /**
      * 深拷贝
@@ -363,7 +665,75 @@
       });
     </script>
     <script type="text/javascript">
-      var mainData = [
+        function getUpdateData(){
+            let cond = {
+              serviceName: serviceName,
+              colNames: ["*"],
+              condition: [
+                {
+                  colName: "id",
+                  ruleType: "eq",
+                  value: ids
+                }
+              ],
+            }
+            let htp = null
+            if(top.pathConfig){
+              htp = top.pathConfig.gateway
+            }else{
+              htp="http://39.98.203.134:8081"
+            }
+
+            axios.post(`${htp}/sqfw/select/${serviceName}`,cond).then(res=>{
+              if(res.data.data){
+                $('.title_text').html(res.data.data[0].instance_name)
+                let resData = res.data.data[0].design_data
+
+              }
+            })
+        }
+        function getLeftDesign(serviceName){
+          let cond = {
+              serviceName: serviceName,
+              colNames: ["*"],
+              condition: [],
+            }
+            let htp = null
+            if(top.pathConfig){
+              htp = top.pathConfig.gateway
+            }else{
+              htp="http://39.98.203.134:8081"
+            }
+
+            axios.post(`${htp}/sqfw/select/${serviceName}`,cond).then(res=>{
+              if(res.data.data){
+                $('.title_text').html(res.data.data[0].instance_name)
+                let resData = res.data.data[0].design_data
+
+              }
+            })
+        }
+        function getQueryVariable(variable){
+          var query = window.location.search.substring(1);
+          var vars = query.split("&");
+          for (var i=0;i<vars.length;i++) {
+                  var pair = vars[i].split("=");
+                  if(pair[0] == variable){return pair[1];}
+          }
+          return(false);
+        }
+       let pageType =  getQueryVariable("pageType")
+       let ids = getQueryVariable("id")
+       let serviceName = getQueryVariable("service")
+       console.log('pageType---',pageType)
+       var mainData = []
+       if(pageType === 'add'){
+        mainData = []
+        // getLeftDesign(serviceName)
+       }
+       if(pageType === 'update'){
+        // getLeftDesign(serviceName)
+         mainData = [
         // 	{
         // 	id: 'node1',
         // 	title: '存储过程1',
@@ -394,9 +764,12 @@
           comp_no: "work_start",
           instance_no: "node1",
           title: "存储过程1",
-          x_pos: 80,
-          y_pos: 20,
+          x_pos: -370,
+          y_pos: 265,
           in_instance_no: [], //被xxx连接
+          in_comp: [],//能被xxx连接
+          isFin:false,
+          icon: "../jsplumb/css/img/start.png",
           form: {
             srv: {
               add_srv: "srvzhsq_dept_add",
@@ -404,7 +777,7 @@
             },
             // col 使用通用v2查询
             data: {
-              name: "yyy"
+              // name: "yyy"
             }
           }
         },
@@ -412,9 +785,12 @@
           comp_no: "work_task",
           instance_no: "node2",
           title: "存储过程2",
-          x_pos: 80,
-          y_pos: 100,
+          x_pos: -396,
+          y_pos: 75,
+          isFin:false,
           in_instance_no: ["node1"], //被xxx连接
+          in_comp:[],
+          icon:'../jsplumb/css/img/task.png',
           form: {
             srv: {
               add_srv: "srvzhsq_information_add",
@@ -422,11 +798,17 @@
             },
             // col 使用通用v2查询
             data: {
-              name: "yyy"
+              // name: "yyy"
             }
           }
         }
       ];
+      // mainData.forEach(only=>{
+      //   only['']
+      // })
+       }
+
+      
       $(function() {
         var h = $(window).height() - $(".navbar-inverse").height();
         $(".menu-left,.layout-center,.work_panel,.menu-right").height(h);
@@ -441,27 +823,116 @@
             let childAppear = []
             for (let j = 0; j < zNodes[i].children.length; j++) {
               let a = 0
-              for (let k = 0; k < mainData.length; k++) {
-                if(zNodes[i].children[j].comp_no === mainData[k].comp_no){
-                  a++
-                  if(a<zNodes[i].children[j].amount_limit){
+              let isHas = false
+              if(mainData.length>0){
+                for (let o = 0; o < mainData.length; o++) {
+                  if(mainData[o].comp_no === zNodes[i].children[j].comp_no){                    
+                    isHas = true
+                  }
+                }
+                if(isHas){
+                  for (let k = 0; k < mainData.length; k++) {
+                    if(zNodes[i].children[j].comp_no === mainData[k].comp_no){
+                      a++
+                      if(a<zNodes[i].children[j].amount_limit){
+                        childMin = false
+                        alert(zNodes[i].children[j].name + "节点不得少于"+zNodes[i].children[j].amount_limit+"个")
+                      }
+                    }
+                  }
+                  childAppear.push(a)
+                }else{
+                  childAppear.push(a)
+                  if(zNodes[i].children[j].amount_limit > 0){
                     childMin = false
                     alert(zNodes[i].children[j].name + "节点不得少于"+zNodes[i].children[j].amount_limit+"个")
                   }
-                }
+                }                
               }
-              childAppear.push(a)
+              
+              
               //链接数量限制
 
             }
-            console.log("childAppear",childAppear)
+            if(childAppear.length > 0){
+              let childAppearSum = childAppear.reduce(function(prev,next,index){
+                return prev + next
+              })
+              if(childAppearSum >= parentMinNums){
+                parentMin = true
+              }else{
+                parentMin = false
+                alert(zNodes[i].name + "节点不得少于"+parentMinNums+"个")
+              }
+              console.log("childAppear",zNodes[i].name,childAppear,childAppearSum)
+
+            }
+            
 
           }
+          if(mainData.length===0){
+            childMin = false
+            alert("没有可提交数据")
+          }
+                
+              
           // for (let b = 0; b < array.length; b++) {
           //   const element = array[b];
             
           // }
-          console.log(zNodes)
+          if(parentMin && childMin){
+            let isOk = true
+            mainData.forEach(m=>{
+              // m.form = m.form.data
+              if(!m.isFin){
+                isOk = false
+              }
+            })
+            if(isOk){
+              let endData = []
+              let endDataObj = {}
+              if($('.title_text').html() == ""){
+                alert("标题不能为空")
+              }else{
+                endDataObj['instance_name'] = $('.title_text').html()
+                endDataObj['design_data'] = mainData
+
+                console.log(endDataObj)
+              }
+              
+            }else{
+              alert('信息未完善')
+            }
+          }
+        })
+        $(".title").blur(function(){
+          let titles = $(this).val()
+          if(titles == ""){
+          }else{
+            $(this).css({
+              display:"none"
+            })
+            $('.title_text').html(titles)
+            $('.title_text').css({
+              display:"block"
+            })
+            $('.title_icon').css({
+              display:'block'
+            })
+          }          
+        });
+        $(".title_icon").click(function(){
+          let Tit = $('.title_text').html()
+          $('.title_text').css({
+              display:"none"
+            })
+            $('.title_icon').css({
+              display:'none'
+            })
+            $(".title").css({
+              display:'block'
+            })
+            $(".title").val(Tit)
         })
       });
     </script>
@@ -479,7 +950,7 @@
               x: item.x_pos,
               y: item.y_pos
             };
-            let nodes = addNode(item.instance_no, item.title, positionObj);
+            let nodes = addNode(item.instance_no, item.title, positionObj,item.icon);
             console.log("nodes==" + item.instance_no, nodes);
             addPorts(nodes, ["out"]);
           });
