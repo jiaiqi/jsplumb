@@ -29,7 +29,7 @@
     "@vue/cli-service": "^3.12.1",
     "cross-env": "^5.2.1",
     "increase-memory-limit": "^1.0.3",
-    "node-sass": "^4.13.0",
+    "node-sass": "^4.13.1",
     "vue-template-compiler": "^2.6.11"
   }
 }
